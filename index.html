@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+</head>
+<body>
+    <div id="chat-message" style="height: 300px;">
+    </div>
+    <div id="error" style="color: red;"></div>
+    <input id="message" type="text" placeholder="Message...">
+    <input id="submit" type="submit" value="Send!">
+    <script src="./socket.io/socket.io.js"></script>
+    <script>
+        var message = document.getElementById('message');
+        var chat = document.getElementById('chat-message');
+        var error = document.getElementById("error");
+        var submit = document.getElementById("submit");
+        var socket = io();
+        var username = prompt("Enter a username to use: ");
+        submit.addEventListener('click', (e) => {
+            if (message.value.startsWith("/nick")){
+                if (message.value.trim() == "/nick"){
+                    error.innerHTML = "Use the following format: /nick {Username}";
+                    return;
+                }
+                var st = message.value.split(" ");
+                chat.innerHTML += `<div>${username} changed nickname to ${st[1]}</div>`
+                username = st[1];
+                return;
+            }
+            socket.emit("message", {msg: message.value, user: username}, (response) => {
+                error.innerHTML = response;
+            });
+        });
+        socket.on("addMessage", (arg) => {
+            chat.innerHTML += `<div>${arg.user}: ${arg.msg}</div><br>`;
+        });
+    </script>
+</body>
+</html>
